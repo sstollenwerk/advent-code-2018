@@ -8,13 +8,9 @@ use num_complex::Complex;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-
-
 pub fn to_filename(day: Num) -> String {
     format!("input/{:0>2}.txt", day)
 }
-
-
 
 fn to_grid<V>(data: &HashMap<Complex<Num>, V>) -> Vec<Vec<&V>> {
     let largest = data.keys().map(|c| (c.re, c.im)).max().unwrap();
@@ -97,4 +93,3 @@ pub fn display<V: std::fmt::Debug>(data: &HashMap<Complex<Num>, V>) {
     }
     println!();
 }
-
