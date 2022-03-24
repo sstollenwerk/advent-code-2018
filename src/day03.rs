@@ -1,5 +1,6 @@
 use crate::lib::to_filename;
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
 
@@ -76,13 +77,30 @@ fn overlap(claims: &Vec<Claim>) -> usize {
     dupes.len()
 }
 
+fn no_overlap(claims: &Vec<Claim>) -> Num {
+    let mut seen: HashMap<Position, HashSet<Num>> = HashMap::new();
+    for i in claims {
+        for p in i.positions() {
+            seen.entry(p).or_insert(HashSet::new()).insert(i.id);
+        }
+    }
+    let mut posses: HashSet<Num> = claims.iter().map(|x| x.id).collect();
+    for p in seen.values() {
+        if p.len() > 1 {
+            posses = posses.difference(&p).map(|x| *x).collect()
+        }
+    }
+    assert_eq!(posses.len(), 1);
+    *posses.iter().next().unwrap()
+}
+
 pub fn part1() -> usize {
     let vals = get_data();
 
     overlap(&vals)
 }
 
-pub fn part2() -> usize {
+pub fn part2() -> Num {
     let vals = get_data();
-    todo!();
+    no_overlap(&vals)
 }
