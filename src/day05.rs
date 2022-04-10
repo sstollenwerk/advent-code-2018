@@ -1,12 +1,10 @@
 use crate::lib::to_filename;
 
-use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
 
 use itertools::Itertools;
 
-type Num = u32;
 
 fn get_data() -> Vec<char> {
     fs::read_to_string(to_filename(05))
@@ -20,18 +18,15 @@ fn get_data() -> Vec<char> {
 
 fn reduce(vals_: &Vec<char>) -> Vec<char> {
     let mut vals = vals_.clone();
-    let mut i = vals.len() - 2;
-    while true {
+
+    let mut i = 0 ;
+    while i < vals.len() - 1 {
         let (a, b) = (vals[i], vals[i + 1]);
         if a.eq_ignore_ascii_case(&b) && a != b {
             vals.remove(i);
             vals.remove(i);
         }
-        if i == 0 {
-            break;
-        }
-        // is usize, dealing with converting to/from int is a pain
-        i -= 1;
+        i += 1;
     }
     if &vals == vals_ {
         vals
@@ -46,7 +41,21 @@ pub fn part1() -> usize {
     reduce(&vals).len()
 }
 
-pub fn part2() -> Num {
+fn make_posses(vals: &Vec<char>) -> Vec<Vec<char>> {
+    let chars: HashSet<char> = vals.iter().map(|c| c.to_ascii_lowercase()).collect();
+    let mut res: Vec<Vec<char>> = Vec::new();
+    for c in chars.iter() {
+        let p = vals
+            .iter()
+            .filter(|x| !(c.eq_ignore_ascii_case(x))).map(|x| *x)
+            .collect();
+        res.push(p);
+    }
+    res
+}
+
+pub fn part2() -> usize {
     let vals = get_data();
-    todo!();
+    let posses = make_posses(&vals);
+    posses.iter().map(reduce).map(|x| x.len()).min().unwrap()
 }
