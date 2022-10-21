@@ -51,20 +51,36 @@ fn nearests(
     closests
 }
 
+fn close_enough(
+    threshold: Num,
+    to_check: &Vec<Position>,
+    locations: &[Position],
+) -> HashSet<Position> {
+    let mut close: HashSet<Position> = HashSet::new();
+    for p in to_check {
+        let distances = dists(p, locations);
+        if distances.iter().sum::<Num>() < threshold {
+            close.insert(*p);
+        }
+    }
+    close
+}
+
+fn posses(edge: Num, top: Position, down: Position) -> Vec<Position> {
+    (top.re - edge..down.re + edge)
+        .cartesian_product(top.im - edge..down.im + edge)
+        .map(|(x, y)| Position::new(x, y))
+        .collect()
+}
+
 fn finites(locations: &[Position]) -> HashMap<Position, HashSet<Position>> {
     let a = 5;
     let b = 10;
 
     let (top, down) = corners(locations);
 
-    let ax = (top.re - a..down.re + a)
-        .cartesian_product(top.im - a..down.im + a)
-        .map(|(x, y)| Position::new(x, y))
-        .collect();
-    let bx = (top.re - b..down.re + b)
-        .cartesian_product(top.im - b..down.im + b)
-        .map(|(x, y)| Position::new(x, y))
-        .collect();
+    let ax = posses(a, top, down);
+    let bx = posses(b, top, down);
 
     let mut posses = nearests(&ax, locations);
     let crossreference = nearests(&bx, locations);
@@ -79,13 +95,27 @@ pub fn part1(s: &str) -> usize {
 
     let locs = finites(&vals);
 
-    for (k, v) in locs.iter() {
-        println!("{:?}", &(k, v.len()));
-    }
-
     locs.values().map(|r| r.len()).max().unwrap()
 }
 
-pub fn part2(s: &str) -> Num {
-    todo!();
+pub fn part2(s: &str) -> usize {
+    let threshold = 10000;
+
+    let locations = parse(s);
+
+    let (top, down) = corners(&locations);
+
+    let mut poss: Option<HashSet<Position>> = None;
+
+    for i in (0..) {
+        let kx = posses(i, top, down);
+        let res = Some(close_enough(threshold, &kx, &locations));
+        if res == poss {
+            break;
+        } else {
+            poss = res
+        }
+    }
+
+    poss.unwrap().len()
 }
