@@ -126,7 +126,6 @@ pub fn part1(s: &str) -> Num {
     for e in groups.values() {
         let (guard, _, times) = wakeful(e);
 
-
         sleeps.entry(guard).or_default().push(times);
     }
 
@@ -135,20 +134,39 @@ pub fn part1(s: &str) -> Num {
         .max_by_key(|(_, xs)| xs.iter().flatten().map(|&b| b as Num).sum::<Num>())
         .unwrap();
 
+    let best = most_common_sleep(times).0;
 
-    let best = transpose(times.to_vec())
+    id * (best as Num)
+}
+
+fn most_common_sleep(times: &[Vec<bool>]) -> (usize, Num) {
+    transpose(times.to_vec())
         .into_iter()
         .map(|x| x.iter().map(|&b| b as Num).sum::<Num>())
         .enumerate()
         .max_by_key(|t| t.1)
         .unwrap()
-        .0;
-
-    println!("{:?}", &(id, best));
-
-    id * (best as Num)
 }
 
 pub fn part2(s: &str) -> Num {
-    todo!();
+    let vals = parse(s);
+
+    let groups = group_guards(vals);
+
+    let mut sleeps: HashMap<Num, Vec<Vec<bool>>> = HashMap::new();
+
+    for e in groups.values() {
+        let (guard, _, times) = wakeful(e);
+
+        sleeps.entry(guard).or_default().push(times);
+    }
+
+    let (id, v) = sleeps
+        .iter()
+        .max_by_key(|(_, xs)| most_common_sleep(xs).1)
+        .unwrap();
+
+    let (index, _) = most_common_sleep(v);
+
+    id * (index as Num)
 }
