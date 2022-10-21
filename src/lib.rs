@@ -1,26 +1,20 @@
 #![allow(dead_code)]
 
-use std::fs;
-
 pub type Num = i64;
 
 use num_complex::Complex;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-pub fn to_filename(day: Num) -> String {
-    format!("input/{:0>2}.txt", day)
-}
-
 fn to_grid<V>(data: &HashMap<Complex<Num>, V>) -> Vec<Vec<&V>> {
     let largest = data.keys().map(|c| (c.re, c.im)).max().unwrap();
 
     let mut grid = Vec::new();
 
-    for y in (0..=largest.1) {
+    for y in 0..=largest.1 {
         let mut res = Vec::new();
 
-        for x in (0..=largest.0) {
+        for x in 0..=largest.0 {
             let d = &data[&Complex::new(x as Num, y as Num)];
             res.push(d);
         }
@@ -62,8 +56,8 @@ pub fn to_map(data: &HashSet<Complex<Num>>) -> HashMap<Complex<Num>, char> {
 
     let size = bottom_right - top_left;
 
-    for x in (0..=size.re) {
-        for y in (0..=size.im) {
+    for x in 0..=size.re {
+        for y in 0..=size.im {
             let p = Complex::new(x, y);
             let contained = data.contains(&(p + top_left));
 
