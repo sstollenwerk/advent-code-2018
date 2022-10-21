@@ -3,7 +3,7 @@
 
 mod day04;
 use day04::{part1, part2};
-mod lib;
+mod helper;
 use std::fs;
 
 fn read_day(day: i32) -> String {
