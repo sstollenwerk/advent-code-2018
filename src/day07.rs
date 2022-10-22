@@ -1,8 +1,5 @@
-use crate::lib::to_filename;
-
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::fs;
 
 use itertools::Itertools;
 
@@ -10,12 +7,8 @@ type Node = char;
 type Edge = (Node, Node);
 type Graph = HashMap<Node, HashSet<Node>>;
 
-fn get_data() -> Vec<Edge> {
-    fs::read_to_string(to_filename(07))
-        .expect("Could not read file")
-        .lines()
-        .map(|s| read_row(s))
-        .collect()
+fn parse(s: &str) -> Vec<Edge> {
+    s.lines().map(|s| read_row(s)).collect()
 }
 
 fn read_row(row: &str) -> Edge {
@@ -45,7 +38,7 @@ fn topological_sort(edges_: &Vec<Edge>) -> Vec<Node> {
             .sorted()
             .next()
             .unwrap());
-        res.push((check.clone()));
+        res.push(check.clone());
 
         edges.retain(|(a, _)| a != check);
         (standard, reversed) = make_graphs(&edges);
@@ -60,6 +53,58 @@ fn topological_sort(edges_: &Vec<Edge>) -> Vec<Node> {
 
     res.append(&mut remaining);
     res
+}
+
+fn time(n: Node) -> u32 {
+    60 + n as u32 - ('A' as u32) + 1
+}
+
+fn schedule(edges: &Vec<Edge>, elves: u32) -> u32 {
+    let workers = elves + 1;
+    let base_order = topological_sort(&edges);
+    let mut t: u32 = 0;
+
+    let mut todo: HashSet<Node> = edges.iter().flat_map(|(a, b)| [a, b]).map(|x| *x).collect();
+
+    let mut doing: HashMap<Node, u32> = HashMap::new();
+
+    let (mut standard, reversed) = make_graphs(&edges);
+
+    while todo.len() != 0 {
+        let to_add = (workers as usize) - (doing.len());
+
+        let cant_do: HashSet<Node> = todo
+            .iter()
+            .filter_map(|c| standard.get(c).clone())
+            .fold(HashSet::new(), |acc, x| &acc | &x);
+
+        let check: Vec<Node> = (&(&todo - &cant_do)
+            - &(doing.keys().map(|x| *x).collect::<HashSet<Node>>()))
+            .into_iter()
+            .sorted()
+            .take(to_add)
+            .collect::<Vec<Node>>();
+
+        for k in check {
+            doing.insert(k, time(k));
+        }
+
+        let items: Vec<_> = doing.keys().map(|x| *x).collect();
+
+        for k in items {
+            doing.entry(k).and_modify(|c| *c -= 1);
+            if doing[&k] == 0 {
+                doing.remove(&k);
+                todo.remove(&k);
+            }
+        }
+
+        t += 1;
+
+
+    }
+
+    t
 }
 
 fn make_graphs(edges: &Vec<Edge>) -> (Graph, Graph) {
@@ -77,15 +122,15 @@ fn make_graph(edges: &Vec<Edge>) -> Graph {
     res
 }
 
-pub fn part1() -> String {
-    let vals = get_data();
+pub fn part1(s: &str) -> String {
+    let vals = parse(s);
 
     let r = topological_sort(&vals);
 
     r.iter().cloned().collect::<String>()
 }
 
-pub fn part2() -> usize {
-    let vals = get_data();
-    todo!();
+pub fn part2(s: &str) -> u32 {
+    let vals = parse(s);
+    schedule(&vals, 4)
 }
