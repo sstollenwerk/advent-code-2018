@@ -30,15 +30,7 @@ fn at_time(stars: &HashSet<Particle>, time: Num) -> HashSet<Position> {
     stars.iter().map(|(p, d)| p + (d.scale(time))).collect()
 }
 
-pub fn part1(s: &str) {
-    let points = parse(s);
-
-    //in input first 2 rows are
-    //position=< 42772, -21149> velocity=<-4,  2>
-    //position=< 42804, -31790> velocity=<-4,  3>
-    // want t such that -21149 + 2t  \approx -31790 + 3t
-    // -21149 + 2t  == -31790 + 3t at t = 10641
-
+fn find_best(points: &[Particle]) -> Num {
     let (a, b) = points[0];
     let (c, d) = points[1];
     let (dist, vel) = (a - c, (b - d).scale(-1));
@@ -47,17 +39,22 @@ pub fn part1(s: &str) {
 
     let prob = posses.into_iter().flatten().next().unwrap();
 
-    //get result near the answer, search for closest
+    //get result near the answer - assume it's
+    //within 20 seconds of actual answer
 
-    let best = (prob - 20..=prob + 20)
+    (prob - 20..=prob + 20)
         .min_by_key(|t| {
-            let k = HashSet::from_iter(points.clone());
+            let k = HashSet::from_iter(points.to_owned());
             let res = at_time(&k, *t);
             to_grid(&to_map(&res)).len()
         })
-        .unwrap();
-    // apparently this is answer to part 2
-    dbg!(best);
+        .unwrap()
+}
+
+pub fn part1(s: &str) {
+    let points = parse(s);
+
+    let best = find_best(&points);
 
     let k = HashSet::from_iter(points);
     let res = at_time(&k, best);
@@ -67,5 +64,7 @@ pub fn part1(s: &str) {
 }
 
 pub fn part2(s: &str) -> Num {
-    todo!();
+    let points = parse(s);
+
+    find_best(&points)
 }
