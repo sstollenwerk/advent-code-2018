@@ -1,4 +1,4 @@
-use trees::Tree;
+use trees::{Node, Tree};
 
 type Num = usize;
 
@@ -45,6 +45,24 @@ fn parse_section(xs_: &[Num]) -> (Tr, Vec<Num>) {
     (tree, xs)
 }
 
+fn value(n: &Node<Vec<Num>>) -> Num {
+    let meta = n.data().iter();
+
+    if n.has_no_child() {
+        meta.sum()
+    } else {
+        meta.filter(|m| m > &&0)
+            .filter_map(|m| n.iter().nth(m - 1))
+            .map(value)
+            .sum()
+    }
+
+    // technically .filter(|m| m > &&0) is uneccesary because
+    // 0_usize - 1 becomes 2.pow(32)-1 is longer than iter in input
+    // so nth results in None
+    // but clearer this way
+}
+
 pub fn part1(s: &str) -> Num {
     let vals = parse(s);
 
@@ -53,6 +71,8 @@ pub fn part1(s: &str) -> Num {
     meta.sum()
 }
 
-pub fn part2(s: &str) -> u32 {
-    todo!();
+pub fn part2(s: &str) -> Num {
+    let vals = parse(s);
+
+    value(vals.root())
 }
