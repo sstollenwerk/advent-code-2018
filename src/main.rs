@@ -1,8 +1,8 @@
 #![feature(is_sorted)]
 #![allow(unused_parens)]
 
-mod day08;
-use day08::{part1, part2};
+mod day09;
+use day09::{part1, part2};
 mod helper;
 use std::fs;
 
@@ -16,7 +16,7 @@ fn to_filename(day: i32) -> String {
 }
 
 fn main() {
-    let data = read_day(8);
+    let data = read_day(9);
     println!("{:?}", part1(&data));
     println!("{:?}", part2(&data));
 }
