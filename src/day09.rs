@@ -20,17 +20,12 @@ fn brute_force_game(players: Num, turns: Num) -> Num {
             marbles.rotate_left(2 % marbles.len());
             marbles.push_front(m);
         } else {
-            //println!("{:?}",&marbles);
             scores[p] += m;
             marbles.rotate_right(7 % marbles.len());
             let k = marbles.pop_front().unwrap();
             scores[p] += k;
         }
-        //println!("{:?}",&(p,m,i,marbles[i]));
-        //println!("{:?}",&marbles);
-        //println!();
     }
-    println!("{:?}", &scores);
     *scores.iter().max().unwrap()
 }
 
@@ -41,5 +36,6 @@ pub fn part1(s: &str) -> Num {
 }
 
 pub fn part2(s: &str) -> Num {
-    todo!();
+    let (players, turns) = parse(s);
+    brute_force_game(players, turns * 100)
 }
