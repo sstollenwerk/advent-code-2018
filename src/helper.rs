@@ -6,7 +6,7 @@ use num_complex::Complex;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-fn to_grid<V>(data: &HashMap<Complex<Num>, V>) -> Vec<Vec<&V>> {
+pub fn to_grid<V>(data: &HashMap<Complex<Num>, V>) -> Vec<Vec<&V>> {
     let largest = data.keys().map(|c| (c.re, c.im)).max().unwrap();
 
     let mut grid = Vec::new();
