@@ -73,6 +73,17 @@ pub fn to_map(data: &HashSet<Complex<Num>>) -> HashMap<Complex<Num>, char> {
     res
 }
 
+pub fn read_grid(s: &str) -> HashMap<Complex<Num>, char> {
+    s.lines()
+        .enumerate()
+        .flat_map(|(y, line)| {
+            line.chars()
+                .enumerate()
+                .map(move |(x, r)| (Complex::new(x as Num, y as Num), r))
+        })
+        .collect()
+}
+
 pub fn s_display(data: &HashMap<Complex<Num>, char>) {
     for i in to_grid(data) {
         println!("{:}", i.iter().cloned().collect::<String>());
