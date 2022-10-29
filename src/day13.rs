@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 use num_complex::Complex;
 
-use crate::helper::{read_grid, s_display, to_map, Num};
+use crate::helper::{read_grid, Num};
 
 type Position = Complex<Num>;
 
@@ -108,6 +108,9 @@ fn step(t: &Track, carts_: Carts) -> (Carts, HashSet<Position>) {
 
     for (mut cart, (mut direction, mut num_intersections)) in carts.into_iter() {
         currents.remove(&cart);
+        if crashed.contains(&cart) {
+            continue;
+        }
 
         let mut dirs = t[&cart].clone();
         dirs.remove(&(cart - direction));
@@ -122,29 +125,21 @@ fn step(t: &Track, carts_: Carts) -> (Carts, HashSet<Position>) {
             num_intersections %= moves.len();
         }
 
-        /*   if inter.contains(&cart) {
-            direction *= moves[num_intersections];
-            num_intersections += 1;
-            num_intersections %= moves.len();
-        } else if t.contains(&(cart + direction)) {
-        } else {
-            let mut around = &adj(&cart) & &t;
-            around.remove(&(cart - direction));
-
-            assert!(around.len() == 1);
-            let place = around.into_iter().next().unwrap();
-            direction = place - cart;
-        }*/
         cart += direction;
 
         if currents.contains(&cart) {
             crashed.insert(cart);
-        } else if let Some((c, _)) = res.insert(cart, (direction, num_intersections)) {
+            currents.remove(&cart);
+        } else if res.insert(cart, (direction, num_intersections)).is_some() {
             res.remove(&cart);
             crashed.insert(cart);
+            currents.remove(&cart);
+        } else {
+            currents.insert(cart);
         }
-
-        currents.insert(cart);
+    }
+    for c in crashed.iter() {
+        res.remove(c);
     }
     (res, crashed)
 }
@@ -171,6 +166,15 @@ pub fn part1(s: &str) -> HashSet<Position> {
     }
 }
 
-pub fn part2(s: &str) -> Num {
-    todo!();
+pub fn part2(s: &str) -> Position {
+    let (track, mut carts) = parse(s);
+
+    loop {
+        let (c_, _) = step(&track, carts);
+        carts = c_;
+
+        if carts.len() == 1 {
+            return *carts.keys().next().unwrap();
+        }
+    }
 }
