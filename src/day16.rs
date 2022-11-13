@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::day16::Opcode::{Add, And, Equ, Gre, Mul, Or, Set};
 use crate::day16::V::{C, N};
@@ -90,6 +91,15 @@ fn interpret(r: &Registers, c: &Instruction) -> Registers {
     reg
 }
 
+fn run(inst: Vec<Instruction>) -> Registers {
+    let mut r: Registers = vec![0; 4];
+
+    for i in inst {
+        r = interpret(&r, &i);
+    }
+    r
+}
+
 fn op_posses(r_: &BaseInstruction) -> Vec<Instruction> {
     let r = r_.clone();
     let mut res: Vec<Instruction> = Vec::new();
@@ -108,12 +118,12 @@ fn op_posses(r_: &BaseInstruction) -> Vec<Instruction> {
     res
 }
 
-fn act_posses(s: &Sample) -> Vec<usize> {
-    let mut res = Vec::new();
+fn act_posses(s: &Sample) -> HashSet<usize> {
+    let mut res = HashSet::new();
     let (inst, start, end) = s;
     for (i, poss) in op_posses(inst).into_iter().enumerate() {
         if interpret(start, &poss) == *end {
-            res.push(i)
+            res.insert(i);
         }
     }
     assert!(!res.is_empty());
@@ -126,7 +136,46 @@ pub fn part1(s: &str) -> usize {
     samples.iter().filter(|x| act_posses(x).len() >= 3).count()
 }
 
+fn find_possibilities(samples: Vec<Sample>) -> HashMap<Num, usize> {
+    let mut posses: HashMap<Num, HashSet<usize>> = HashMap::new();
+
+    for s in samples {
+        let k = s.0[0];
+        let v = act_posses(&s);
+        if !posses.contains_key(&k) {
+            posses.insert(k, v);
+        } else {
+            posses.insert(k, &posses[&k] & &v);
+        }
+    }
+
+    let mut res: HashMap<Num, usize> = HashMap::new();
+
+    while !posses.is_empty() {
+        let tmp = posses.clone();
+        let (k, v) = tmp.iter().find(|(_, v)| v.len() == 1).unwrap();
+        posses.remove(k);
+        res.insert(*k, *v.iter().next().unwrap());
+
+        let tmp = posses.clone();
+
+        for k2 in tmp.keys() {
+            posses.insert(*k2, &posses[k2] - v);
+        }
+    }
+
+    res
+}
+
 pub fn part2(s: &str) -> Num {
     let (samples, inst) = parse(s);
-    todo!();
+
+    let map = find_possibilities(samples);
+
+    let instructions: Vec<Instruction> = inst
+        .into_iter()
+        .map(|x| op_posses(&x)[map[&x[0]]])
+        .collect();
+
+    run(instructions)[0]
 }
